@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IGNITE Entry Scanner</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111;color:#fff}
+.wrap{max-width:560px;margin:auto;padding:18px 16px 30px} h1{margin:4px 0 2px;font-size:28px} .sub{color:#aaa;margin-bottom:14px}
+.card{background:#1d1d1f;border-radius:18px;padding:14px;margin:12px 0} #reader{width:100%;overflow:hidden;border-radius:14px;background:#000}
+button{width:100%;border:0;border-radius:13px;padding:14px;margin-top:10px;font-size:17px;font-weight:700}
+.primary{background:#fff;color:#111} .danger{background:#b00020;color:#fff}
+.result{text-align:center;border-radius:16px;padding:16px;margin:12px 0;font-size:22px;font-weight:800;min-height:86px}
+.ready{background:#2b2b2f;color:#ddd} .valid{background:#173f25;color:#79e89b} .used{background:#4a3412;color:#ffc85a} .invalid{background:#4b1717;color:#ff7b7b}
+.count{font-size:22px;font-weight:800} .bar{height:9px;background:#333;border-radius:10px;overflow:hidden;margin-top:8px} .fill{height:100%;background:#fff;width:0}
+.list{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}
+.pass{background:#2b2b2f;border-radius:10px;padding:9px 2px;text-align:center;font-size:12px}
+.pass.used{background:#214d2e;color:#8ff0a8}
+.small{color:#aaa;font-size:12px;line-height:1.4;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>IGNITE ENTRY</h1>
+<div class="sub">QR Pass Scanner</div>
+<div id="result" class="result ready">READY — Tap START SCANNER</div>
+<div class="card">
+<div id="reader"></div>
+<button id="start" class="primary" onclick="startScanner()">START SCANNER</button>
+</div>
+<div class="card">
+<div class="count"><span id="count">0</span> / 100 scanned</div>
+<div class="bar"><div id="fill" class="fill"></div></div>
+</div>
+<div class="card">
+<strong>Pass checklist</strong>
+<div id="list" class="list"></div>
+</div>
+<button class="danger" onclick="resetAll()">RESET ALL SCANS</button>
+<div class="small">Scans are saved on this device. Do not clear browser data during the event.</div>
+</div>
+<script>
+const PASSES=[{"number":1,"code":"IGNITE26-001-6F9105"},{"number":2,"code":"IGNITE26-002-5FECC0"},{"number":3,"code":"IGNITE26-003-2AC4BD"},{"number":4,"code":"IGNITE26-004-C5E89E"},{"number":5,"code":"IGNITE26-005-F461A2"},{"number":6,"code":"IGNITE26-006-879F2E"},{"number":7,"code":"IGNITE26-007-20B433"},{"number":8,"code":"IGNITE26-008-D5AAD2"},{"number":9,"code":"IGNITE26-009-50D843"},{"number":10,"code":"IGNITE26-010-F69B68"},{"number":11,"code":"IGNITE26-011-40564E"},{"number":12,"code":"IGNITE26-012-BA9871"},{"number":13,"code":"IGNITE26-013-633D0E"},{"number":14,"code":"IGNITE26-014-9EB58B"},{"number":15,"code":"IGNITE26-015-FD4614"},{"number":16,"code":"IGNITE26-016-20D9CF"},{"number":17,"code":"IGNITE26-017-ACAFCF"},{"number":18,"code":"IGNITE26-018-1B2228"},{"number":19,"code":"IGNITE26-019-3251B7"},{"number":20,"code":"IGNITE26-020-E999AE"},{"number":21,"code":"IGNITE26-021-197EF3"},{"number":22,"code":"IGNITE26-022-66BBE8"},{"number":23,"code":"IGNITE26-023-5938C4"},{"number":24,"code":"IGNITE26-024-BE960A"},{"number":25,"code":"IGNITE26-025-728BE8"},{"number":26,"code":"IGNITE26-026-FC7252"},{"number":27,"code":"IGNITE26-027-5ADAC3"},{"number":28,"code":"IGNITE26-028-9D3A1F"},{"number":29,"code":"IGNITE26-029-845097"},{"number":30,"code":"IGNITE26-030-DD48F6"},{"number":31,"code":"IGNITE26-031-A46008"},{"number":32,"code":"IGNITE26-032-A428BA"},{"number":33,"code":"IGNITE26-033-C0DC42"},{"number":34,"code":"IGNITE26-034-86422A"},{"number":35,"code":"IGNITE26-035-B55905"},{"number":36,"code":"IGNITE26-036-E1B35E"},{"number":37,"code":"IGNITE26-037-D2B026"},{"number":38,"code":"IGNITE26-038-41A47C"},{"number":39,"code":"IGNITE26-039-EA88B0"},{"number":40,"code":"IGNITE26-040-DE7DB1"},{"number":41,"code":"IGNITE26-041-1CA652"},{"number":42,"code":"IGNITE26-042-7AFA45"},{"number":43,"code":"IGNITE26-043-E35EF1"},{"number":44,"code":"IGNITE26-044-3371CB"},{"number":45,"code":"IGNITE26-045-B834F3"},{"number":46,"code":"IGNITE26-046-855942"},{"number":47,"code":"IGNITE26-047-614305"},{"number":48,"code":"IGNITE26-048-B927CE"},{"number":49,"code":"IGNITE26-049-01B23D"},{"number":50,"code":"IGNITE26-050-0ABE59"},{"number":51,"code":"IGNITE26-051-F28C52"},{"number":52,"code":"IGNITE26-052-FC3532"},{"number":53,"code":"IGNITE26-053-A03A9A"},{"number":54,"code":"IGNITE26-054-1B4F11"},{"number":55,"code":"IGNITE26-055-1AF0FD"},{"number":56,"code":"IGNITE26-056-76F31A"},{"number":57,"code":"IGNITE26-057-F2CCDD"},{"number":58,"code":"IGNITE26-058-21A0FF"},{"number":59,"code":"IGNITE26-059-D8A17A"},{"number":60,"code":"IGNITE26-060-D374F1"},{"number":61,"code":"IGNITE26-061-E2EF6F"},{"number":62,"code":"IGNITE26-062-259F60"},{"number":63,"code":"IGNITE26-063-621A9E"},{"number":64,"code":"IGNITE26-064-639DAA"},{"number":65,"code":"IGNITE26-065-0C5D13"},{"number":66,"code":"IGNITE26-066-F659B4"},{"number":67,"code":"IGNITE26-067-F5CF6D"},{"number":68,"code":"IGNITE26-068-5EA8B3"},{"number":69,"code":"IGNITE26-069-3F8B77"},{"number":70,"code":"IGNITE26-070-BE9B3A"},{"number":71,"code":"IGNITE26-071-B803B8"},{"number":72,"code":"IGNITE26-072-90CA33"},{"number":73,"code":"IGNITE26-073-865E00"},{"number":74,"code":"IGNITE26-074-49E265"},{"number":75,"code":"IGNITE26-075-883D96"},{"number":76,"code":"IGNITE26-076-4DD8D1"},{"number":77,"code":"IGNITE26-077-824ECD"},{"number":78,"code":"IGNITE26-078-959D2F"},{"number":79,"code":"IGNITE26-079-C5AEF2"},{"number":80,"code":"IGNITE26-080-07EC0E"},{"number":81,"code":"IGNITE26-081-A23D17"},{"number":82,"code":"IGNITE26-082-534396"},{"number":83,"code":"IGNITE26-083-70E074"},{"number":84,"code":"IGNITE26-084-04B4E8"},{"number":85,"code":"IGNITE26-085-F3910F"},{"number":86,"code":"IGNITE26-086-CC034F"},{"number":87,"code":"IGNITE26-087-9C4AE2"},{"number":88,"code":"IGNITE26-088-979359"},{"number":89,"code":"IGNITE26-089-427AB5"},{"number":90,"code":"IGNITE26-090-A419DD"},{"number":91,"code":"IGNITE26-091-8CBF4E"},{"number":92,"code":"IGNITE26-092-8DAA7A"},{"number":93,"code":"IGNITE26-093-748505"},{"number":94,"code":"IGNITE26-094-E58862"},{"number":95,"code":"IGNITE26-095-FE9B4A"},{"number":96,"code":"IGNITE26-096-4F988A"},{"number":97,"code":"IGNITE26-097-A5F226"},{"number":98,"code":"IGNITE26-098-B9823A"},{"number":99,"code":"IGNITE26-099-A74C58"},{"number":100,"code":"IGNITE26-100-94350D"}];
+const byCode=new Map(PASSES.map(p=>[p.code.toUpperCase(),p]));
+let used=JSON.parse(localStorage.getItem("ignite_used_v1")||"[]");
+used=new Set(used.map(String));
+let scanner=null, running=false, lastCode="", lastTime=0;
+
+function render(){
+  const n=used.size; document.getElementById("count").textContent=n;
+  document.getElementById("fill").style.width=(n/100*100)+"%";
+  document.getElementById("list").innerHTML=PASSES.map(p=>`<div class="pass ${used.has(String(p.number))?"used":""}">PASS ${String(p.number).padStart(3,"0")}${used.has(String(p.number))?" ✓":""}</div>`).join("");
+}
+function save(){localStorage.setItem("ignite_used_v1",JSON.stringify([...used]));render();}
+function show(cls,title,detail=""){const e=document.getElementById("result");e.className="result "+cls;e.innerHTML=title+(detail?`<div style="font-size:14px;font-weight:600;margin-top:7px">${detail}</div>`:"");}
+function onScan(decodedText){
+  const now=Date.now(); if(decodedText===lastCode && now-lastTime<1800)return; lastCode=decodedText; lastTime=now;
+  const code=String(decodedText).trim().toUpperCase();
+  const p=byCode.get(code);
+  if(!p){show("invalid","✕ INVALID","This is not an IGNITE pass.");return;}
+  if(used.has(String(p.number))){show("used","⚠ ALREADY SCANNED","PASS "+String(p.number).padStart(3,"0")+" has already been used.");return;}
+  used.add(String(p.number)); save();
+  show("valid","✓ ENTRY ALLOWED","PASS "+String(p.number).padStart(3,"0")+" marked as scanned.");
+}
+async function startScanner(){
+  if(running)return;
+  document.getElementById("start").textContent="SCANNER RUNNING";
+  show("ready","READY","Point the camera at the QR code.");
+  scanner=new Html5Qrcode("reader");
+  try{
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:240,height:240}},onScan,()=>{});
+    running=true;
+  }catch(e){
+    document.getElementById("start").textContent="START SCANNER";
+    show("invalid","CAMERA NOT AVAILABLE","Allow camera access and make sure this page is opened over HTTPS.");
+  }
+}
+function resetAll(){
+  if(confirm("Reset all 100 passes? This cannot be undone on this device.")){used=new Set();save();show("ready","READY — ALL PASSES RESET");}
+}
+render();
+</script>
+</body>
+</html>
